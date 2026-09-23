@@ -255,6 +255,29 @@
         .log-row { padding: 14px 8px; border-bottom: 1px solid var(--border-soft); display: flex; justify-content: space-between; align-items: center; font-size: 13px; gap: 10px; transition: background .12s var(--ease); }
         .log-row:hover { background: #faf9fc; }
         .log-row:last-child { border-bottom: none; }
+
+
+        /* Filtros da aba Movimentação */
+        .mov-filter-panel {
+            background: #faf9fc;
+            border: 1px solid var(--border-soft);
+            border-radius: var(--r-lg);
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+        .mov-filter-grid {
+            display: grid;
+            grid-template-columns: minmax(220px, 1.7fr) minmax(150px, .8fr) minmax(150px, .8fr) minmax(170px, .9fr);
+            gap: 12px;
+            align-items: end;
+        }
+        .mov-filter-grid input, .mov-filter-grid select { margin-bottom: 0; }
+        .mov-filter-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+        .mov-filter-actions .btn-principal { width: auto; min-width: 150px; padding: 11px 18px; }
+        .mov-filter-status { margin-top: 10px; font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+        .mov-empty { padding: 34px 18px; text-align: center; color: var(--ink-soft); border: 1px dashed var(--border); border-radius: var(--r-md); background: #fff; }
+        @media (max-width: 900px) { .mov-filter-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 600px) { .mov-filter-grid { grid-template-columns: 1fr; } .mov-filter-actions .btn-principal, .mov-filter-actions .btn-pag { width: 100%; } }
         .badge-mov { padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size: 10.5px; color: white; letter-spacing: .02em; display: inline-block; }
         .bg-entrada { background: var(--verde); }
         .bg-saida { background: var(--vermelho); }
@@ -775,11 +798,46 @@
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
                         <h3 class="section-title" style="margin:0"><svg class="icon" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M17 3h4v4"/><path d="M8 16v-4"/><path d="M12 16v-8"/><path d="M16 16v-2"/><path d="m14 9 7-7"/></svg>Movimentação</h3>
-                        <div style="display:flex; gap:10px">
-                            <input type="text" id="busca-mov" placeholder="Filtrar por nome..." onkeyup="app.renderMov()" style="width:180px; margin-bottom:0">
-                            <button class="btn-excel" onclick="app.abrirModalExport()"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportar Excel</button>
-                        </div>
+                        <button class="btn-excel" onclick="app.abrirModalExport()"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportar Excel</button>
                     </div>
+
+                    <div class="mov-filter-panel">
+                        <div class="mov-filter-grid">
+                            <div>
+                                <label>Buscar</label>
+                                <input type="text" id="busca-mov" placeholder="Nome, código, protocolo ou responsável..." onkeyup="app.renderMov()">
+                            </div>
+                            <div>
+                                <label>Data inicial</label>
+                                <input type="date" id="mov-inicio">
+                            </div>
+                            <div>
+                                <label>Data final</label>
+                                <input type="date" id="mov-fim">
+                            </div>
+                            <div>
+                                <label>Tipo</label>
+                                <select id="mov-acao" onchange="app.renderMov()">
+                                    <option value="">Todos</option>
+                                    <option value="ENTRADA">Entrada</option>
+                                    <option value="SAÍDA">Saída</option>
+                                    <option value="EDIÇÃO">Edição</option>
+                                    <option value="ESTORNO">Estorno</option>
+                                    <option value="SOLICITAÇÃO">Solicitação</option>
+                                    <option value="RECEBIMENTO">Recebimento</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mov-filter-actions">
+                            <button class="btn-principal" onclick="app.buscarHistoricoMov()">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                                Buscar histórico
+                            </button>
+                            <button class="btn-pag" onclick="app.limparFiltroMov()">Limpar filtros / últimos registros</button>
+                        </div>
+                        <div id="mov-filter-status" class="mov-filter-status">Exibindo os últimos registros carregados. Para consultar períodos antigos, informe a data inicial e/ou final e clique em <b>Buscar histórico</b>.</div>
+                    </div>
+
                     <div id="lista-movimentacao"></div>
                 </div>
             </div>
@@ -976,6 +1034,8 @@
             itensPorPagina: 50,
             massaCount: 0,
             protocolosPorUnidade: {},
+            movHistoricoLogs: null,
+            movHistoricoAtivo: false,
 
             async connectDB() {
                 const config = configs[this.unidade];
@@ -1687,28 +1747,136 @@
                 });
             },
 
-            renderMov() {
-                const busca = document.getElementById('busca-mov').value.toLowerCase();
-                const logs = Object.values(this.dados.logs).reverse().filter(l => l.desc.toLowerCase().includes(busca));
-                document.getElementById('lista-movimentacao').innerHTML = logs.slice(0,1000).map(l => {
+            logDataISO(data) {
+                const match = String(data || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                if(!match) return '';
+                return `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`;
+            },
+
+            filtrarMovLogs(lista) {
+                const busca = (document.getElementById('busca-mov')?.value || '').trim().toLowerCase();
+                const inicio = document.getElementById('mov-inicio')?.value || '';
+                const fim = document.getElementById('mov-fim')?.value || '';
+                const acao = (document.getElementById('mov-acao')?.value || '').toUpperCase();
+
+                return lista.filter(l => {
                     const m = l.meta || {};
-                    let cor = 'bg-entrada'; 
-                    if(l.acao.includes('SAÍDA')) cor = 'bg-saida'; 
+                    if(acao && !(String(l.acao || '').toUpperCase().includes(acao))) return false;
+
+                    if(inicio || fim) {
+                        const dataISO = this.logDataISO(l.data);
+                        if(!dataISO) return false;
+                        if(inicio && dataISO < inicio) return false;
+                        if(fim && dataISO > fim) return false;
+                    }
+
+                    if(busca) {
+                        const texto = [l.desc, l.user, l.acao, m.cod, m.prot, m.mot, m.mot_estorno, m.pac, m.ordem, m.lab]
+                            .filter(v => v !== undefined && v !== null)
+                            .join(' ')
+                            .toLowerCase();
+                        if(!texto.includes(busca)) return false;
+                    }
+                    return true;
+                });
+            },
+
+            async buscarHistoricoMov() {
+                const inicio = document.getElementById('mov-inicio').value;
+                const fim = document.getElementById('mov-fim').value;
+                if(!inicio && !fim) return alert('Informe pelo menos uma data para consultar o histórico completo.');
+                if(inicio && fim && inicio > fim) return alert('A data inicial não pode ser maior que a data final.');
+
+                const status = document.getElementById('mov-filter-status');
+                status.innerHTML = 'Consultando o histórico completo no banco de dados...';
+                try {
+                    const snap = await db.ref('logs').once('value');
+                    const todos = snap.val() || {};
+                    this.movHistoricoLogs = {};
+                    Object.entries(todos).forEach(([id, log]) => {
+                        this.movHistoricoLogs[id] = { ...log, id };
+                    });
+                    this.movHistoricoAtivo = true;
+                    this.renderMov();
+                } catch (e) {
+                    console.error('Erro ao consultar histórico:', e);
+                    status.innerHTML = 'Não foi possível consultar o histórico completo.';
+                    alert('Erro ao consultar o histórico. Verifique sua conexão e tente novamente.');
+                }
+            },
+
+            limparFiltroMov() {
+                document.getElementById('busca-mov').value = '';
+                document.getElementById('mov-inicio').value = '';
+                document.getElementById('mov-fim').value = '';
+                document.getElementById('mov-acao').value = '';
+                this.movHistoricoLogs = null;
+                this.movHistoricoAtivo = false;
+                this.renderMov();
+            },
+
+            renderMov() {
+                const fonte = this.movHistoricoAtivo && this.movHistoricoLogs
+                    ? Object.values(this.movHistoricoLogs)
+                    : Object.values(this.dados.logs);
+
+                const logs = this.filtrarMovLogs(fonte)
+                    .sort((a, b) => String(b.id || '').localeCompare(String(a.id || '')));
+
+                const status = document.getElementById('mov-filter-status');
+                if(status) {
+                    const inicio = document.getElementById('mov-inicio')?.value;
+                    const fim = document.getElementById('mov-fim')?.value;
+                    const periodo = inicio || fim
+                        ? ` Período: ${inicio ? inicio.split('-').reverse().join('/') : 'início'} até ${fim ? fim.split('-').reverse().join('/') : 'hoje'}.`
+                        : '';
+                    status.innerHTML = this.movHistoricoAtivo
+                        ? `<b>${logs.length}</b> registro(s) encontrado(s) no histórico completo.${periodo}`
+                        : `<b>${logs.length}</b> registro(s) encontrado(s) entre os últimos registros carregados.${periodo} Para períodos antigos, use <b>Buscar histórico</b>.`;
+                }
+
+                const lista = document.getElementById('lista-movimentacao');
+                if(!logs.length) {
+                    lista.innerHTML = '<div class="mov-empty">Nenhuma movimentação encontrada para os filtros informados.</div>';
+                    return;
+                }
+
+                const limiteTela = 2000;
+                lista.innerHTML = logs.slice(0, limiteTela).map(l => {
+                    const m = l.meta || {};
+                    let cor = 'bg-entrada';
+                    if(String(l.acao || '').includes('SAÍDA')) cor = 'bg-saida';
                     if(l.acao === 'ESTORNO' || l.acao === 'EDIÇÃO') cor = 'bg-estorno';
                     if(l.acao === 'SOLICITAÇÃO' || l.acao === 'RECEBIMENTO') cor = 'bg-solicitacao';
 
-                    let extra = m.mot ? `<br><b>Motivo:</b> ${m.mot}` : "";
-                    if(l.acao === 'SAÍDA' && m.mot === 'Consumo' && m.pac) extra += ` | <b>Paciente:</b> ${m.pac}`;
-                    if(l.acao === 'ESTORNO' && m.mot_estorno) extra = `<br><b>Motivo Estorno:</b> ${m.mot_estorno}`;
-                    if(l.acao === 'SOLICITAÇÃO') extra = `<br><b>N° Ordem:</b> ${m.ordem} | <b>Lab:</b> ${m.lab || '-'}`;
-                    if(l.acao === 'RECEBIMENTO') extra = `<br><b>N° Ordem:</b> ${m.ordem} | <b>Recebido em:</b> ${m.dataR.split('-').reverse().join('/')}`;
+                    const desc = this.escapeHtml(l.desc || '-');
+                    const user = this.escapeHtml(l.user || '-');
+                    const acaoTxt = this.escapeHtml(l.acao || '-');
+                    const cod = this.escapeHtml(m.cod || '-');
+                    const prot = this.escapeHtml(m.prot || '-');
+                    const dataTxt = this.escapeHtml(l.data || '-');
 
-                    const btnDel = (this.user.login === 'login americas') ? `<button class="btn-edit" style="margin-left:10px; color:var(--vermelho)" onclick="app.excluirLog('${l.id}')">🗑️</button>` : '';
-                    return `<div class="log-row"><span><span class="badge-mov ${cor}">${l.acao}</span> <b>${l.desc}</b><span class="info-detalhada">Cód: ${m.cod || '-'} | Prot: ${m.prot || '-'}${extra}<br>Resp: ${l.user}</span></span><div style="display:flex; align-items:center"><small>${l.data}</small>${btnDel}</div></div>`;
-                }).join('');
+                    let extra = m.mot ? `<br><b>Motivo:</b> ${this.escapeHtml(m.mot)}` : '';
+                    if(l.acao === 'SAÍDA' && m.mot === 'Consumo' && m.pac) extra += ` | <b>Paciente:</b> ${this.escapeHtml(m.pac)}`;
+                    if(l.acao === 'ESTORNO' && m.mot_estorno) extra = `<br><b>Motivo Estorno:</b> ${this.escapeHtml(m.mot_estorno)}`;
+                    if(l.acao === 'SOLICITAÇÃO') extra = `<br><b>N° Ordem:</b> ${this.escapeHtml(m.ordem || '-')} | <b>Lab:</b> ${this.escapeHtml(m.lab || '-')}`;
+                    if(l.acao === 'RECEBIMENTO') {
+                        const dataR = m.dataR ? String(m.dataR).split('-').reverse().join('/') : '-';
+                        extra = `<br><b>N° Ordem:</b> ${this.escapeHtml(m.ordem || '-')} | <b>Recebido em:</b> ${this.escapeHtml(dataR)}`;
+                    }
+
+                    const btnDel = (this.user.login === 'login americas') ? `<button class="btn-edit" style="margin-left:10px; color:var(--vermelho)" onclick="app.excluirLog('${this.escapeHtml(l.id)}')">🗑️</button>` : '';
+                    return `<div class="log-row"><span><span class="badge-mov ${cor}">${acaoTxt}</span> <b>${desc}</b><span class="info-detalhada">Cód: ${cod} | Prot: ${prot}${extra}<br>Resp: ${user}</span></span><div style="display:flex; align-items:center"><small>${dataTxt}</small>${btnDel}</div></div>`;
+                }).join('') + (logs.length > limiteTela ? `<div class="mov-filter-status" style="padding:12px 4px">Exibindo os ${limiteTela} registros mais recentes de ${logs.length} encontrados. Refine o período ou a busca para reduzir o resultado.</div>` : '');
             },
 
-            abrirModalExport() { document.getElementById('modal-export').classList.remove('hidden'); },
+            abrirModalExport() {
+                const movInicio = document.getElementById('mov-inicio')?.value || '';
+                const movFim = document.getElementById('mov-fim')?.value || '';
+                if(movInicio) document.getElementById('exp-inicio').value = movInicio;
+                if(movFim) document.getElementById('exp-fim').value = movFim;
+                document.getElementById('modal-export').classList.remove('hidden');
+            },
             fecharModalExport() { document.getElementById('modal-export').classList.add('hidden'); },
 
             abrirModalExportEstoque() { document.getElementById('modal-export-estoque').classList.remove('hidden'); },
@@ -1807,7 +1975,7 @@
                 this.fecharModalExportEstoque();
             },
 
-            processarExportacaoAvancada() {
+            async processarExportacaoAvancada() {
                 const inicio = document.getElementById('exp-inicio').value;
                 const fim = document.getElementById('exp-fim').value;
 
@@ -1820,7 +1988,18 @@
                     'RECEBIMENTO': document.getElementById('exp-recebimento').checked
                 };
 
-                const logsFiltrados = Object.values(this.dados.logs).filter(l => {
+                let fonteLogs = Object.values(this.dados.logs);
+                if(inicio || fim) {
+                    try {
+                        const snap = await db.ref('logs').once('value');
+                        fonteLogs = Object.entries(snap.val() || {}).map(([id, log]) => ({ ...log, id }));
+                    } catch (e) {
+                        console.error('Erro ao carregar histórico para exportação:', e);
+                        return alert('Não foi possível carregar o histórico completo para exportação.');
+                    }
+                }
+
+                const logsFiltrados = fonteLogs.filter(l => {
                     // 1. FILTRO DE AÇÃO (Mais flexível)
                     const acaoLog = (l.acao || "").toUpperCase();
                     let acaoOk = false;
@@ -1838,14 +2017,8 @@
                     if(inicio || fim) {
                         // Extrai apenas os números da data (ignora vírgulas, horas, etc)
                         // l.data costuma ser "DD/MM/AAAA HH:MM:SS" ou "DD/MM/AAAA, HH:MM:SS"
-                        const match = l.data.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-                        if(!match) return false;
-
-                        const dia = match[1].padStart(2, '0');
-                        const mes = match[2].padStart(2, '0');
-                        const ano = match[3];
-                        const dataLogISO = `${ano}-${mes}-${dia}`; // Formato YYYY-MM-DD
-                        
+                        const dataLogISO = this.logDataISO(l.data);
+                        if(!dataLogISO) return false;
                         if(inicio && dataLogISO < inicio) return false;
                         if(fim && dataLogISO > fim) return false;
                     }
