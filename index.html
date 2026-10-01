@@ -1003,7 +1003,7 @@
                     messagingSenderId: "722436445499",
                     appId: "1:722436445499:web:e4c968164056477d44d31e"
                 },
-                protocolos: ["20230246", "2011 (HARMONY)", "AMGEN20230153", "ARANOTE", "ASCENT 7", "ATLAS", "BLUESTAR", "CA057-001", "CÂMBRIA 2", "CAMELOT", "CELLTRION", "CLEE0011012001", "DREAMM 7", "DS302", "ELEGANT", "ESCALADE", "EVOPAR", "EVOPAR 2", "EXCALIBER", "EXCALIBER MANUTENÇÃO", "GLOBRYTE", "IMGN853-0421", "INTAS PHARM 0439", "IRAKLIA", "JPCF", "JZLH", "KER-050-D301", "LINKER", "LOU064P12301", "MAGNETISMM 32", "MAGNETISMM 5", "MAGNITUDE 01", "MAGNITUDE 02", "MAJESTEC 4", "MARIGOLD", "MK1084-004", "MK-2870-020", "MONUMENTAL 3", "MONUMENTAL 6", "MOUTAINEER 03", "OLYMPIA 01", "OLYMPIA 02", "OLYMPIA 03", "PRISM-MEL", "REJOICE", "REMASTER", "RYL-2608-102", "SYMPHONY", "TRILOGY4", "TRILOGY5", "TROPIONLUNG15", "VANTAGE"],
+                protocolos: ["20230246", "2011 (HARMONY)", "AMGEN20230153", "ARANOTE", "ASCENT 7", "ATLAS", "BLUESTAR", "CA057-001", "CÂMBRIA 2", "CAMELOT", "CELLTRION", "WIDER", "DREAMM 7", "DS302", "ELEGANT", "ESCALADE", "EVOPAR", "EVOPAR 2", "EXCALIBER", "EXCALIBER MANUTENÇÃO", "GLOBRYTE", "IMGN853-0421", "INTAS PHARM 0439", "IRAKLIA", "JPCF", "JZLH", "KER-050-D301", "LINKER", "MAGNETISMM 32", "MAGNETISMM 5", "MAGNITUDE 01", "MAGNITUDE 02", "MAJESTEC 4", "MARIGOLD", "MK1084-004", "MK-2870-020", "MONUMENTAL 3", "MONUMENTAL 6", "MOUTAINEER 03", "OLYMPIA 01", "OLYMPIA 02", "OLYMPIA 03", "PRISM-MEL", "REJOICE", "REMASTER", "RYL-2608-102", "SYMPHONY", "TRILOGY4", "TRILOGY5", "TROPIONLUNG15", "VANTAGE"],
                 locais: ["Armário 1", "Armário 2", "Armário 3", "Armário 4", "Armário 5", "Armário 6", "Armário 7", "Armário 8", "Banheiro Antigo", "Monitoria 1", "Monitoria 2", "Sala de Reunião 1", "Sala de Reunião 2"]
             },
             SP: {
@@ -1057,9 +1057,22 @@
                 }[char]));
             },
 
+            normalizarProtocolo(protocolo) {
+                const valor = String(protocolo ?? '').trim();
+                if(!valor) return '';
+                const chave = valor.toLocaleUpperCase('pt-BR');
+                if(chave === 'CLEE0011012001') return 'WIDER';
+                if(chave === 'LOU064P12301') return 'REMASTER';
+                return valor;
+            },
+
             getProtocolos(unidade = this.unidade) {
                 const salvos = this.protocolosPorUnidade[unidade];
-                return Array.isArray(salvos) ? [...salvos] : [...configs[unidade].protocolos];
+                const base = Array.isArray(salvos) ? [...salvos] : [...configs[unidade].protocolos];
+                return [...new Set(base
+                    .map(p => this.normalizarProtocolo(p))
+                    .filter(Boolean))]
+                    .sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' }));
             },
 
             updateTheme(unidade) {
@@ -1183,7 +1196,9 @@
                     this.dados.logs = {};
                     const logs = snap.val() || {};
                     Object.entries(logs).forEach(([id, log]) => {
-                        this.dados.logs[id] = { ...log, id };
+                        const meta = log.meta ? { ...log.meta } : {};
+                        if(meta.prot) meta.prot = this.normalizarProtocolo(meta.prot);
+                        this.dados.logs[id] = { ...log, meta, id };
                     });
                     this.renderLogs();
                     this.renderMov();
@@ -1191,9 +1206,17 @@
 
                 db.ref('/').on('value', (snap) => {
                     const val = snap.val() || {};
-                                        this.dados.materiais = val.materiais || {};
+                    const materiaisRaw = val.materiais || {};
+                    this.dados.materiais = Object.fromEntries(Object.entries(materiaisRaw).map(([id, item]) => [id, {
+                        ...item,
+                        prot: this.normalizarProtocolo(item?.prot)
+                    }]));
                     this.dados.usuarios = val.usuarios || {};
-                    this.dados.solicitacoes = val.solicitacoes || {};
+                    const solicitacoesRaw = val.solicitacoes || {};
+                    this.dados.solicitacoes = Object.fromEntries(Object.entries(solicitacoesRaw).map(([id, item]) => [id, {
+                        ...item,
+                        prot: this.normalizarProtocolo(item?.prot)
+                    }]));
                     this.protocolosPorUnidade = (val.configuracoes && val.configuracoes.protocolos) || {};
                     this.updateTheme(this.unidade);
                     this.renderEstoque();
@@ -1309,8 +1332,12 @@
                     alert('A manutenção de protocolos está disponível somente para o login master.');
                     return false;
                 }
-                await db.ref('configuracoes/protocolos/' + unidade).set(protocolos);
-                this.protocolosPorUnidade[unidade] = [...protocolos];
+                const protocolosOrdenados = [...new Set(protocolos
+                    .map(p => this.normalizarProtocolo(p))
+                    .filter(Boolean))]
+                    .sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' }));
+                await db.ref('configuracoes/protocolos/' + unidade).set(protocolosOrdenados);
+                this.protocolosPorUnidade[unidade] = [...protocolosOrdenados];
                 if(this.unidade === unidade) this.updateTheme(this.unidade);
                 this.renderManutencao();
                 return true;
@@ -1814,7 +1841,9 @@
                     const todos = snap.val() || {};
                     this.movHistoricoLogs = {};
                     Object.entries(todos).forEach(([id, log]) => {
-                        this.movHistoricoLogs[id] = { ...log, id };
+                        const meta = log.meta ? { ...log.meta } : {};
+                        if(meta.prot) meta.prot = this.normalizarProtocolo(meta.prot);
+                        this.movHistoricoLogs[id] = { ...log, meta, id };
                     });
                     this.movHistoricoAtivo = true;
                     this.renderMov();
