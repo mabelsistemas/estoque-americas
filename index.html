@@ -1753,6 +1753,26 @@
                 return `${match[3]}-${match[2].padStart(2, '0')}-${match[1].padStart(2, '0')}`;
             },
 
+            logTimestamp(data) {
+                const match = String(data || '').trim().match(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+                if(!match) return 0;
+                const dia = Number(match[1]);
+                const mes = Number(match[2]) - 1;
+                const ano = Number(match[3]);
+                const hora = Number(match[4] || 0);
+                const minuto = Number(match[5] || 0);
+                const segundo = Number(match[6] || 0);
+                return new Date(ano, mes, dia, hora, minuto, segundo).getTime();
+            },
+
+            ordenarLogsMaisRecentes(lista) {
+                return lista.sort((a, b) => {
+                    const diferenca = this.logTimestamp(b.data) - this.logTimestamp(a.data);
+                    if(diferenca !== 0) return diferenca;
+                    return String(b.id || '').localeCompare(String(a.id || ''));
+                });
+            },
+
             filtrarMovLogs(lista) {
                 const busca = (document.getElementById('busca-mov')?.value || '').trim().toLowerCase();
                 const inicio = document.getElementById('mov-inicio')?.value || '';
@@ -1820,8 +1840,7 @@
                     ? Object.values(this.movHistoricoLogs)
                     : Object.values(this.dados.logs);
 
-                const logs = this.filtrarMovLogs(fonte)
-                    .sort((a, b) => String(b.id || '').localeCompare(String(a.id || '')));
+                const logs = this.ordenarLogsMaisRecentes(this.filtrarMovLogs(fonte));
 
                 const status = document.getElementById('mov-filter-status');
                 if(status) {
@@ -2028,6 +2047,8 @@
 
                 if(logsFiltrados.length === 0) return alert("Nenhum dado encontrado para os filtros e período selecionados.");
 
+                this.ordenarLogsMaisRecentes(logsFiltrados);
+
                 const dadosExcel = logsFiltrados.map(l => {
                     const m = l.meta || {};
                     const [data, hora] = l.data.split(' ');
@@ -2040,7 +2061,7 @@
                         'Código de Barras': m.cod || '-',
                         'Protocolo': m.prot || '-',
                         'Motivo/Paciente/Lab': m.mot || m.pac || m.lab || m.mot_estorno || '-',
-                        'N° Ordem': m.ordem || '-'
+                        'Data de Validade': m.venc ? String(m.venc).split('-').reverse().join('/') : '-'
                     };
                 });
 
