@@ -17,7 +17,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --premium-bg: #f5f5f7;
@@ -413,6 +413,389 @@
         .etiqueta-preview:hover { transform: translateY(-2px); }
         .etiqueta-preview svg { width: 100%; height: auto; }
     </style>
+
+    <style id="ia-indicadores-theme">
+        /* ============================================================
+           TEMA VISUAL — SISTEMA DE INDICADORES | INSTITUTO AMÉRICAS
+           Aplicado ao Controle de KIT sem alterar regras de negócio.
+           ============================================================ */
+        :root {
+            --ia-primary: #5B0065;
+            --ia-primary-strong: #3F0048;
+            --ia-primary-soft: #F5EDF6;
+            --ia-bg: #F5F6FA;
+            --ia-card: #FFFFFF;
+            --ia-ink: #321638;
+            --ia-text: #4B3F4F;
+            --ia-muted: #6B7280;
+            --ia-border: #E5E7EB;
+            --ia-border-soft: #EEF0F3;
+            --ia-green: #15803D;
+            --ia-red: #B91C1C;
+            --ia-amber: #B45309;
+
+            /* compatibilidade com os tokens já usados pelo sistema KIT */
+            --premium-bg: var(--ia-bg) !important;
+            --premium-accent: var(--ia-primary) !important;
+            --premium-card: var(--ia-card) !important;
+            --premium-text: var(--ia-ink) !important;
+            --premium-gray: var(--ia-muted) !important;
+            --roxo: var(--ia-primary) !important;
+            --roxo-escuro: var(--ia-primary-strong) !important;
+            --lilas: #8C3C95 !important;
+            --escuro: var(--ia-ink) !important;
+            --cinza-fundo: var(--ia-bg) !important;
+            --cinza-borda: var(--ia-border) !important;
+            --verde: var(--ia-green) !important;
+            --vermelho: var(--ia-red) !important;
+            --texto: var(--ia-text) !important;
+            --alerta-laranja: var(--ia-amber) !important;
+            --azul-principal: var(--ia-primary) !important;
+            --border: var(--ia-border) !important;
+            --border-soft: var(--ia-border-soft) !important;
+            --ink-soft: var(--ia-muted) !important;
+            --sidebar-bg: #FFFFFF !important;
+            --sidebar-bg-2: #FFFFFF !important;
+            --sidebar-text: #504455 !important;
+            --sidebar-text-dim: #837589 !important;
+            --r-sm: 9px;
+            --r-md: 12px;
+            --r-lg: 14px;
+            --r-xl: 18px;
+            --shadow-xs: 0 1px 2px rgba(50, 22, 56, .04);
+            --shadow-sm: 0 1px 3px rgba(50, 22, 56, .05), 0 1px 2px rgba(50, 22, 56, .03);
+            --shadow-md: 0 8px 24px rgba(50, 22, 56, .08);
+            --shadow-lg: 0 18px 48px rgba(50, 22, 56, .14);
+        }
+
+        html, body { background: var(--ia-bg); }
+        body {
+            font-family: 'Manrope', 'Segoe UI', sans-serif !important;
+            color: var(--ia-text);
+        }
+        h1,h2,h3,h4,h5,h6,
+        .kpi-value {
+            font-family: 'Sora', 'Manrope', sans-serif !important;
+            color: var(--ia-ink);
+        }
+
+        /* LOGIN */
+        .auth-screen {
+            background:
+                radial-gradient(circle at 12% 12%, rgba(91,0,101,.09), transparent 34%),
+                radial-gradient(circle at 88% 88%, rgba(91,0,101,.06), transparent 34%),
+                var(--ia-bg) !important;
+        }
+        .auth-card {
+            border: 1px solid var(--ia-border);
+            box-shadow: 0 18px 50px rgba(50,22,56,.10) !important;
+            border-radius: 18px !important;
+            padding: 40px 38px !important;
+        }
+        .auth-card img { width: 205px; margin-bottom: 26px; background: transparent; }
+        .auth-card h3 { font-family: 'Sora', sans-serif !important; color: var(--ia-primary-strong); }
+        .auth-card label { color: var(--ia-muted); letter-spacing: .055em; }
+        .auth-card input, .auth-card select {
+            background: #fff !important;
+            border: 1px solid var(--ia-border) !important;
+            border-radius: 9px !important;
+            min-height: 44px;
+        }
+        .auth-card input:focus, .auth-card select:focus {
+            border-color: var(--ia-primary) !important;
+            box-shadow: 0 0 0 3px rgba(91,0,101,.10) !important;
+        }
+        .btn-premium {
+            background: var(--ia-primary) !important;
+            border-radius: 9px !important;
+            box-shadow: none !important;
+        }
+        .btn-premium:hover { background: var(--ia-primary-strong) !important; box-shadow: 0 6px 18px rgba(91,0,101,.16) !important; }
+
+        /* APP SHELL */
+        #layout-sistema { background: var(--ia-bg); padding-bottom: 52px; }
+        header {
+            height: 74px !important;
+            background: rgba(255,255,255,.97) !important;
+            color: var(--ia-ink) !important;
+            border-bottom: 1px solid var(--ia-border) !important;
+            box-shadow: 0 1px 3px rgba(50,22,56,.035) !important;
+            padding: 0 24px !important;
+            backdrop-filter: blur(10px);
+        }
+        header img {
+            height: 46px !important;
+            padding: 0 !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+        }
+        .ia-brand-copy { display:flex; flex-direction:column; min-width:0; gap:2px; }
+        #header-title {
+            margin: 0 !important;
+            font-family: 'Sora', sans-serif !important;
+            color: var(--ia-primary-strong) !important;
+            font-size: 15px !important;
+            font-weight: 800 !important;
+            letter-spacing: .035em !important;
+            text-transform: uppercase;
+            line-height: 1.15;
+        }
+        .ia-brand-subtitle {
+            margin: 0;
+            color: var(--ia-muted);
+            font-size: 11.5px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .topbar-user { gap: 9px !important; }
+        .topbar-user-pill {
+            background: #fff !important;
+            border: 1px solid var(--ia-border) !important;
+            padding: 6px 11px 6px 7px !important;
+            color: var(--ia-ink) !important;
+        }
+        .topbar-user-avatar {
+            background: var(--ia-primary-soft) !important;
+            color: var(--ia-primary) !important;
+            border: 1px solid rgba(91,0,101,.10);
+        }
+        #user-info { color: var(--ia-ink) !important; }
+        .btn-logout, .btn-view-toggle {
+            background: #fff !important;
+            color: var(--ia-primary) !important;
+            border: 1px solid var(--ia-border) !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+        }
+        .btn-logout:hover, .btn-view-toggle:hover {
+            background: var(--ia-primary-soft) !important;
+            border-color: rgba(91,0,101,.22) !important;
+            transform: none !important;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            top: 74px !important;
+            width: 250px;
+            background: #fff !important;
+            border-right: 1px solid var(--ia-border) !important;
+            padding: 18px 12px 56px !important;
+            box-shadow: none !important;
+        }
+        .sidebar::before {
+            content: 'NAVEGAÇÃO';
+            display: block;
+            padding: 0 12px 9px;
+            color: #9A91A0;
+            font-size: 9.5px;
+            font-weight: 800;
+            letter-spacing: .11em;
+        }
+        .nav-btn {
+            color: #5F5363 !important;
+            border-radius: 8px !important;
+            padding: 10px 12px !important;
+            font-size: 13px !important;
+            font-weight: 650 !important;
+            margin-bottom: 3px !important;
+            gap: 11px !important;
+        }
+        .nav-btn .icon { color: #8A7F8E !important; }
+        .nav-btn:hover:not(.active) {
+            background: #F8F5F8 !important;
+            color: var(--ia-primary) !important;
+            transform: none !important;
+        }
+        .nav-btn:hover:not(.active) .icon { color: var(--ia-primary) !important; }
+        .nav-btn.active {
+            background: var(--ia-primary-soft) !important;
+            color: var(--ia-primary) !important;
+            box-shadow: inset 3px 0 0 var(--ia-primary) !important;
+            font-weight: 800 !important;
+        }
+        .nav-btn.active .icon { color: var(--ia-primary) !important; }
+
+        /* CONTEÚDO */
+        main {
+            margin-left: 250px;
+            margin-top: 74px !important;
+            padding: 26px 30px 40px !important;
+            max-width: none !important;
+            background: var(--ia-bg);
+        }
+        .card {
+            border: 1px solid var(--ia-border) !important;
+            border-radius: 14px !important;
+            box-shadow: var(--shadow-sm) !important;
+            padding: 24px !important;
+            background: #fff !important;
+        }
+        .card h3, .card h4 { color: var(--ia-ink) !important; }
+        .section-title { gap: 9px !important; }
+        .section-title .icon { color: var(--ia-primary) !important; }
+
+        /* KPIs */
+        .kpi-grid { gap: 14px !important; }
+        .kpi-card {
+            border: 1px solid var(--ia-border) !important;
+            border-radius: 13px !important;
+            box-shadow: var(--shadow-sm) !important;
+            padding: 18px 20px !important;
+            background: #fff !important;
+        }
+        .kpi-card:hover { transform: translateY(-1px) !important; box-shadow: var(--shadow-md) !important; }
+        .kpi-value { color: var(--ia-ink) !important; font-size: 23px !important; }
+        .kpi-label { color: var(--ia-muted) !important; font-size: 10.5px !important; letter-spacing: .045em !important; }
+        .kpi-icon { border-radius: 10px !important; }
+        .kpi-icon.k-roxo { background: var(--ia-primary-soft) !important; color: var(--ia-primary) !important; }
+        .kpi-icon.k-azul { background: #F0EEFA !important; color: #5946A8 !important; }
+        .kpi-icon.k-vermelho { background: #FDF0F0 !important; color: var(--ia-red) !important; }
+        .kpi-icon.k-laranja { background: #FFF6E9 !important; color: var(--ia-amber) !important; }
+        .kpi-icon.k-verde { background: #EEF8F1 !important; color: var(--ia-green) !important; }
+
+        /* CAMPOS / FILTROS */
+        input, select, textarea {
+            border: 1px solid var(--ia-border) !important;
+            border-radius: 8px !important;
+            background: #fff !important;
+            color: var(--ia-ink) !important;
+            font-family: 'Manrope', sans-serif !important;
+            min-height: 42px;
+        }
+        input::placeholder, textarea::placeholder { color: #A09AA3; }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--ia-primary) !important;
+            box-shadow: 0 0 0 3px rgba(91,0,101,.09) !important;
+        }
+        label {
+            color: #625767 !important;
+            font-size: 11px !important;
+            letter-spacing: .045em !important;
+            font-weight: 800 !important;
+        }
+
+        /* BOTÕES */
+        .btn-principal, .btn-confirm {
+            background: var(--ia-primary) !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+        }
+        .btn-principal:hover:not(:disabled), .btn-confirm:hover {
+            background: var(--ia-primary-strong) !important;
+            box-shadow: 0 6px 16px rgba(91,0,101,.14) !important;
+            transform: translateY(-1px) !important;
+        }
+        .btn-excel { background: var(--ia-green) !important; border-radius: 8px !important; box-shadow: none !important; }
+        .btn-excel:hover { background: #126C34 !important; transform: translateY(-1px) !important; }
+        .btn-add-item, .btn-usb-focus {
+            background: #4B3F4F !important;
+            border-radius: 8px !important;
+        }
+        .btn-scan-mini { background: var(--ia-primary) !important; border-radius: 8px !important; }
+        .btn-edit { color: var(--ia-primary) !important; }
+        .btn-edit:hover { background: var(--ia-primary-soft) !important; }
+        .btn-pag { border: 1px solid var(--ia-border) !important; border-radius: 8px !important; }
+        .btn-pag:hover:not(:disabled) { border-color: var(--ia-primary) !important; color: var(--ia-primary) !important; background: var(--ia-primary-soft) !important; }
+        .btn-cancel { background: #F3F4F6 !important; color: #5F5363 !important; }
+
+        /* TABELAS */
+        table {
+            border: 1px solid var(--ia-border) !important;
+            border-radius: 10px !important;
+            box-shadow: none !important;
+        }
+        th {
+            background: #F8F7FA !important;
+            color: #554659 !important;
+            border-bottom: 1px solid var(--ia-border) !important;
+            font-size: 10px !important;
+            letter-spacing: .055em !important;
+        }
+        td { color: #514553 !important; border-bottom: 1px solid var(--ia-border-soft) !important; }
+        tbody tr:hover { background: #FBF8FB !important; }
+
+        /* PROTOCOLOS / LISTAS */
+        .protocol-card {
+            background: #fff !important;
+            border: 1px solid var(--ia-border) !important;
+            border-radius: 10px !important;
+            min-height: 66px;
+        }
+        .protocol-card:hover {
+            border-color: rgba(91,0,101,.32) !important;
+            background: var(--ia-primary-soft) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: var(--shadow-sm) !important;
+        }
+        .protocol-card h4 { color: #574A5B !important; }
+        .protocol-card .count { color: var(--ia-primary) !important; }
+        .log-row { border-bottom-color: var(--ia-border-soft) !important; }
+        .log-row:hover { background: #FBF8FB !important; }
+        .badge-mov { border-radius: 999px !important; }
+        .bg-entrada { background: var(--ia-green) !important; }
+        .bg-saida { background: var(--ia-red) !important; }
+        .bg-estorno { background: var(--ia-amber) !important; }
+        .bg-solicitacao { background: var(--ia-primary) !important; }
+        .bg-quarentena { background: #FEF2F2 !important; border-color: var(--ia-red) !important; color: #991B1B !important; }
+        .bg-vencendo { background: #FFF7ED !important; border-color: var(--ia-amber) !important; color: #92400E !important; }
+
+        /* ADMIN / MANUTENÇÃO / ETIQUETAS */
+        .user-card, .manutencao-item, .manutencao-toolbar, .etiqueta-preview-container {
+            background: #FAFAFB !important;
+            border-color: var(--ia-border) !important;
+        }
+        .manutencao-item, .user-card, .etiqueta-preview { border-radius: 10px !important; }
+        .etiqueta-preview { border-color: var(--ia-border) !important; box-shadow: none !important; }
+        .btn-adm-action { border-color: var(--ia-border) !important; border-radius: 8px !important; }
+        .btn-adm-approve { background: var(--ia-green) !important; }
+        .btn-adm-block { background: var(--ia-red) !important; }
+
+        /* MODAIS */
+        .modal { background: rgba(50,22,56,.42) !important; }
+        .modal-content {
+            border: 1px solid var(--ia-border);
+            border-radius: 16px !important;
+            box-shadow: 0 24px 60px rgba(50,22,56,.18) !important;
+        }
+        .export-option:hover { background: var(--ia-primary-soft) !important; }
+        .export-option input { accent-color: var(--ia-primary) !important; }
+
+        /* SCANNER */
+        .scanner-view { border-color: var(--ia-primary) !important; border-radius: 12px !important; }
+        input.barcode-usb-focus { border-color: var(--ia-primary) !important; box-shadow: 0 0 0 3px rgba(91,0,101,.10) !important; }
+
+        /* FOOTER */
+        footer {
+            background: rgba(255,255,255,.97) !important;
+            color: #8B8290 !important;
+            border-top: 1px solid var(--ia-border) !important;
+            padding: 9px !important;
+            font-size: 10.5px !important;
+            box-shadow: 0 -1px 3px rgba(50,22,56,.025);
+        }
+
+        /* Scrollbar no mesmo tom neutro do Indicadores */
+        ::-webkit-scrollbar-thumb { background: #D8D5DC !important; }
+        ::-webkit-scrollbar-thumb:hover { background: #BEB8C3 !important; }
+        * { scrollbar-color: #D8D5DC transparent !important; }
+
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+            header { height: 68px !important; padding: 0 12px !important; }
+            header img { height: 37px !important; }
+            .ia-brand-subtitle { display:none; }
+            #header-title { font-size: 11px !important; max-width: 155px !important; }
+            .sidebar { top: 68px !important; }
+            main { margin-top: 68px !important; }
+            .sidebar::before { display:none; }
+            .card { padding: 17px !important; }
+        }
+        body.modo-mobile header { height: 68px !important; }
+        body.modo-mobile .sidebar { top: 68px !important; }
+        body.modo-mobile main { margin-top: 68px !important; }
+        body.modo-mobile .sidebar::before { display:none; }
+    </style>
+
 </head>
 <body>
 
@@ -451,7 +834,10 @@
         <header>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <img id="header-logo" src="https://www.institutoamericas.org/wp-content/uploads/2025/09/logo-instituto-americas.svg" alt="Logo">
-                <h2 id="header-title" style="font-size: 18px; font-weight: 700; letter-spacing: 1px;">Sistema de Controle de Estoque Unificado Américas</h2>
+                <div class="ia-brand-copy">
+                    <h2 id="header-title" style="font-size: 18px; font-weight: 700; letter-spacing: 1px;">Sistema de Controle de Estoque Unificado Américas</h2>
+                    <p class="ia-brand-subtitle">Gestão integrada · Instituto Américas</p>
+                </div>
             </div>
             <div class="topbar-user">
                 <button class="btn-view-toggle" id="btn-toggle-view" onclick="appUI.toggleViewMode()" title="Alternar entre visualização Notebook e Celular">
