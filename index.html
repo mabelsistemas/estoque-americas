@@ -1231,7 +1231,7 @@
             <div id="v-manut" class="view hidden">
                 <div class="card">
                     <h3 class="section-title"><svg class="icon" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="m19.4 15 .1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.8 1.8 0 0 0-3.1 1.3v.2a2 2 0 1 1-4 0v-.2a1.8 1.8 0 0 0-3.1-1.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.8 1.8 0 0 0-1.3-3.1h-.2a2 2 0 1 1 0-4h.2a1.8 1.8 0 0 0 1.3-3.1l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.8 1.8 0 0 0 3.1-1.3v-.2a2 2 0 1 1 4 0v.2a1.8 1.8 0 0 0 3.1 1.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.8 1.8 0 0 0 1.3 3.1h.2a2 2 0 1 1 0 4h-.2a1.8 1.8 0 0 0-1.3 3.1Z"/></svg>Manutenção de Protocolos</h3>
-                    <p style="font-size:13px; color:var(--ink-soft); margin-top:-8px;">Inclua ou exclua protocolos usados nos formulários de Entrada, Solicitação e Etiquetas. As alterações ficam separadas por unidade.</p>
+                    <p style="font-size:13px; color:var(--ink-soft); margin-top:-8px;">Inclua novos protocolos usados nos formulários de Entrada, Solicitação e Etiquetas. A exclusão é restrita aos perfis Administrador e MASTER.</p>
                     <div class="manutencao-toolbar">
                         <div>
                             <label>Unidade</label>
@@ -1437,6 +1437,18 @@
                 return this.user?.isMaster === true;
             },
 
+            isAdministrador() {
+                return this.user?.role === 'admin';
+            },
+
+            podeManterProtocolos() {
+                return !!this.user && this.user.role !== 'viewer';
+            },
+
+            podeExcluirProtocolo() {
+                return this.isMaster() || this.isAdministrador();
+            },
+
             escapeHtml(value) {
                 return String(value).replace(/[&<>"']/g, (char) => ({
                     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -1570,7 +1582,7 @@
                 }
 
                                 const navMan = document.getElementById('nav-manut');
-                if(navMan) navMan.classList.toggle('hidden', !this.isMaster());
+                if(navMan) navMan.classList.toggle('hidden', !this.podeManterProtocolos());
 
                 this.nav('dash');
             },
@@ -1617,8 +1629,8 @@
             },
 
                         nav(id) {
-                if(id === 'manut' && !this.isMaster()) {
-                    alert('A aba de Manutenção está disponível somente para o login master.');
+                if(id === 'manut' && !this.podeManterProtocolos()) {
+                    alert('O perfil Visualizador não possui permissão para alterar protocolos.');
                     return;
                 }
                 document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -1702,26 +1714,39 @@
                     item.className = 'manutencao-item';
                     const nome = document.createElement('span');
                     nome.textContent = protocolo;
-                    const botao = document.createElement('button');
-                    botao.type = 'button';
-                    botao.className = 'btn-adm-action btn-adm-block';
-                    botao.textContent = 'Excluir';
-                    botao.title = `Excluir ${protocolo}`;
-                    botao.onclick = () => this.excluirProtocolo(protocolo, unidade);
-                    item.append(nome, botao);
+                    item.appendChild(nome);
+                    if(this.podeExcluirProtocolo()) {
+                        const botao = document.createElement('button');
+                        botao.type = 'button';
+                        botao.className = 'btn-adm-action btn-adm-block';
+                        botao.textContent = 'Excluir';
+                        botao.title = `Excluir ${protocolo}`;
+                        botao.onclick = () => this.excluirProtocolo(protocolo, unidade);
+                        item.appendChild(botao);
+                    }
                     container.appendChild(item);
                 });
             },
 
             async salvarProtocolos(unidade, protocolos) {
-                if(!this.isMaster()) {
-                    alert('A manutenção de protocolos está disponível somente para o login master.');
+                if(!this.podeManterProtocolos()) {
+                    alert('O perfil Visualizador não possui permissão para alterar protocolos.');
                     return false;
                 }
                 const protocolosOrdenados = [...new Set(protocolos
                     .map(p => this.normalizarProtocolo(p))
                     .filter(Boolean))]
                     .sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' }));
+
+                // Usuário/Padrão pode somente acrescentar protocolos. Remoções exigem Administrador ou MASTER.
+                if(!this.podeExcluirProtocolo()) {
+                    const atuais = this.getProtocolos(unidade);
+                    const removeuExistente = atuais.some(p => !protocolosOrdenados.includes(p));
+                    if(removeuExistente) {
+                        alert('Somente Administrador ou MASTER pode excluir protocolos.');
+                        return false;
+                    }
+                }
                 await db.ref('configuracoes/protocolos/' + unidade).set(protocolosOrdenados);
                 this.protocolosPorUnidade[unidade] = [...protocolosOrdenados];
                 if(this.unidade === unidade) this.updateTheme(this.unidade);
@@ -1730,7 +1755,7 @@
             },
 
             async adicionarProtocolo() {
-                if(!this.isMaster()) return alert('A manutenção de protocolos está disponível somente para o login master.');
+                if(!this.podeManterProtocolos()) return alert('O perfil Visualizador não possui permissão para incluir protocolos.');
                 const unidade = document.getElementById('manut-unidade').value;
                 const campo = document.getElementById('manut-protocolo');
                 const protocolo = campo.value.trim().replace(/\s+/g, ' ');
@@ -1761,7 +1786,7 @@
             },
 
             async excluirProtocolo(protocolo, unidade) {
-                if(!this.isMaster()) return alert('A manutenção de protocolos está disponível somente para o login master.');
+                if(!this.podeExcluirProtocolo()) return alert('Somente Administrador ou MASTER pode excluir protocolos.');
                 const protocolos = this.getProtocolos(unidade);
                 if(!protocolos.includes(protocolo)) return alert('Protocolo não encontrado.');
 
